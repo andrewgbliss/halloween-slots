@@ -1,9 +1,10 @@
-[gd_scene load_steps=12 format=4 uid="uid://cpqpcceulodc1"]
+[gd_scene load_steps=14 format=4 uid="uid://cpqpcceulodc1"]
 
 [ext_resource type="TileSet" uid="uid://cc0lpenrgnggx" path="res://scenes/world/platformer/basic/platformer_halloween_8bitblocks_world_tiles.tres" id="1_cv3xv"]
 [ext_resource type="Script" uid="uid://dwisagxtjle1l" path="res://scenes/slot_machine.gd" id="1_myip4"]
 [ext_resource type="Script" uid="uid://dfp07djigitpu" path="res://blisscode/generation/tile_map_layer_advanced.gd" id="2_myip4"]
 [ext_resource type="PackedScene" uid="uid://q5hagpg6ld8r" path="res://scenes/slot_machine_slot.tscn" id="3_sq5s4"]
+[ext_resource type="Texture2D" uid="uid://dl5ed1afrnnhn" path="res://assets/img/masks/LightMask.png" id="5_puwce"]
 [ext_resource type="Texture2D" uid="uid://cyjbdtyv3tl58" path="res://assets/img/theme/spin.png" id="5_sq5s4"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_sgi0d"]
@@ -35,6 +36,12 @@ frequency = 0.03
 noise_type = 0
 seed = 1487393688
 frequency = 0.025
+
+[sub_resource type="Environment" id="Environment_2e0ow"]
+background_mode = 3
+glow_enabled = true
+glow_bloom = 0.13
+glow_blend_mode = 1
 
 [node name="SlotMachine" type="Node2D" node_paths=PackedStringArray("result_label", "money_label")]
 script = ExtResource("1_myip4")
@@ -74,6 +81,14 @@ position = Vector2(400, 64)
 [node name="SlotMachineSlot3" parent="." instance=ExtResource("3_sq5s4")]
 position = Vector2(432, 64)
 
+[node name="PointLight2D" type="PointLight2D" parent="."]
+position = Vector2(408, 99)
+energy = 2.0
+texture = ExtResource("5_puwce")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_2e0ow")
+
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="ResultsLabel" type="Label" parent="CanvasLayer"]
@@ -87,30 +102,28 @@ offset_bottom = 96.0
 grow_horizontal = 2
 
 [node name="MoneyLabel" type="Label" parent="CanvasLayer"]
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -120.0
-offset_top = -56.0
-offset_right = -80.0
-offset_bottom = -24.0
-grow_horizontal = 0
-grow_vertical = 0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = 173.0
+offset_top = 21.0
+offset_right = 213.0
+offset_bottom = 53.0
+grow_horizontal = 2
 text = "$1.00"
 
 [node name="TextureButton" type="TextureButton" parent="CanvasLayer"]
-anchors_preset = 3
-anchor_left = 1.0
+modulate = Color(1.5790963, 1.5790963, 1.5790963, 1)
+anchors_preset = 7
+anchor_left = 0.5
 anchor_top = 1.0
-anchor_right = 1.0
+anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -56.0
-offset_top = -56.0
-offset_right = -16.0
-offset_bottom = -16.0
-grow_horizontal = 0
+offset_left = -21.0
+offset_top = -97.0
+offset_right = 19.0
+offset_bottom = -57.0
+grow_horizontal = 2
 grow_vertical = 0
 texture_normal = ExtResource("5_sq5s4")
 stretch_mode = 0

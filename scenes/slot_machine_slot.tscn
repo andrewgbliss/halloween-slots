@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://q5hagpg6ld8r"]
+[gd_scene load_steps=6 format=3 uid="uid://q5hagpg6ld8r"]
 
-[ext_resource type="Script" uid="uid://d1p1w0v4nd33x" path="res://scenes/prototypes/slot_machine/slot_machine_slot.gd" id="1_8ph12"]
+[ext_resource type="Script" uid="uid://d1p1w0v4nd33x" path="res://scenes/slot_machine_slot.gd" id="1_8ph12"]
 [ext_resource type="Texture2D" uid="uid://g04e6gtas8ej" path="res://assets/img/theme/Halloween-Items.png" id="2_58d5i"]
+[ext_resource type="Texture2D" uid="uid://dl5ed1afrnnhn" path="res://assets/img/masks/LightMask.png" id="3_vxutx"]
 
 [sub_resource type="Shader" id="Shader_8ph12"]
 code = "shader_type canvas_item;
@@ -72,3 +73,7 @@ material = SubResource("ShaderMaterial_58d5i")
 position = Vector2(8, 7.9999995)
 scale = Vector2(0.16666666, 0.49999997)
 texture = ExtResource("2_58d5i")
+
+[node name="PointLight2D" type="PointLight2D" parent="."]
+position = Vector2(8, 9)
+texture = ExtResource("3_vxutx")
