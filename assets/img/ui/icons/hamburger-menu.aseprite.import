@@ -1,0 +1,14 @@
+[remap]
+
+importer="aseprite_wizard.plugin.noop"
+type="PackedDataContainer"
+uid="uid://dj6dwxggxqk38"
+path="res://.godot/imported/hamburger-menu.aseprite-cef850833e59febbf34978186a257176.res"
+
+[deps]
+
+source_file="res://assets/img/ui/icons/hamburger-menu.aseprite"
+dest_files=["res://.godot/imported/hamburger-menu.aseprite-cef850833e59febbf34978186a257176.res"]
+
+[params]
+

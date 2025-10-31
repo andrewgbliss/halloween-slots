@@ -1,0 +1,14 @@
+[remap]
+
+importer="aseprite_wizard.plugin.noop"
+type="PackedDataContainer"
+uid="uid://77c2y5ixd4tt"
+path="res://.godot/imported/GrassySwamp.aseprite-aa02ef6d7192d497aaf4d94487b00470.res"
+
+[deps]
+
+source_file="res://assets/img/terrains/GrassySwamp.aseprite"
+dest_files=["res://.godot/imported/GrassySwamp.aseprite-aa02ef6d7192d497aaf4d94487b00470.res"]
+
+[params]
+

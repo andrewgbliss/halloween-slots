@@ -1,0 +1,14 @@
+[remap]
+
+importer="aseprite_wizard.plugin.noop"
+type="PackedDataContainer"
+uid="uid://bjg4vqkhmb63e"
+path="res://.godot/imported/grass-water.aseprite-6e309cc45e8ee439e6ec62f056844332.res"
+
+[deps]
+
+source_file="res://assets/img/terrains/grass-water.aseprite"
+dest_files=["res://.godot/imported/grass-water.aseprite-6e309cc45e8ee439e6ec62f056844332.res"]
+
+[params]
+

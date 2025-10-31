@@ -1,0 +1,64 @@
+[gd_resource type="Theme" load_steps=14 format=3 uid="uid://b2r2bk4bp4lgv"]
+
+[ext_resource type="Texture2D" uid="uid://dbk0i2wssgrct" path="res://assets/img/ui/sets/FunWoodSet.png" id="1_0ref1"]
+[ext_resource type="FontFile" uid="uid://bpemy6eb6xjf5" path="res://assets/fonts/PixelFont.ttf" id="1_knrol"]
+[ext_resource type="Texture2D" uid="uid://d4grlow1yk6tl" path="res://assets/img/ui/inventory/InventorySlot.png" id="2_xul1n"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_0ref1"]
+load_path = "res://.godot/imported/FunWoodSet.png-f06778b90220deb889891e578656cd0c.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ehq15"]
+atlas = SubResource("CompressedTexture2D_0ref1")
+region = Rect2(96, 0, 48, 16)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_il5tp"]
+texture = SubResource("AtlasTexture_ehq15")
+texture_margin_left = 16.0
+texture_margin_right = 16.0
+modulate_color = Color(0.52, 0.52, 0.52, 1)
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_4tj8r"]
+load_path = "res://.godot/imported/FunWoodSet.png-f06778b90220deb889891e578656cd0c.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dwelr"]
+atlas = SubResource("CompressedTexture2D_4tj8r")
+region = Rect2(96, 0, 48, 16)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_eev3d"]
+texture = SubResource("AtlasTexture_dwelr")
+texture_margin_left = 16.0
+texture_margin_right = 16.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xul1n"]
+bg_color = Color(0.12, 0.12, 0.12, 0.61960787)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xul1n"]
+atlas = ExtResource("1_0ref1")
+region = Rect2(0, 0, 48, 48)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ehq15"]
+texture = SubResource("AtlasTexture_xul1n")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
+axis_stretch_horizontal = 2
+axis_stretch_vertical = 2
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_4tj8r"]
+texture = ExtResource("2_xul1n")
+
+[resource]
+default_font = ExtResource("1_knrol")
+default_font_size = 32
+Button/styles/hover = SubResource("StyleBoxTexture_il5tp")
+Button/styles/normal = SubResource("StyleBoxTexture_eev3d")
+NormalPanel/base_type = &"Panel"
+NormalPanel/styles/panel = SubResource("StyleBoxFlat_xul1n")
+Panel/styles/panel = SubResource("StyleBoxTexture_ehq15")
+SlotPanel/base_type = &"Panel"
+SlotPanel/styles/panel = SubResource("StyleBoxTexture_4tj8r")

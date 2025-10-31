@@ -1,0 +1,14 @@
+[remap]
+
+importer="aseprite_wizard.plugin.noop"
+type="PackedDataContainer"
+uid="uid://bgc28225jn3qd"
+path="res://.godot/imported/mountains.aseprite-4da9391b20347a4dc1a3699ebdb78eb9.res"
+
+[deps]
+
+source_file="res://assets/img/terrains/mountains.aseprite"
+dest_files=["res://.godot/imported/mountains.aseprite-4da9391b20347a4dc1a3699ebdb78eb9.res"]
+
+[params]
+

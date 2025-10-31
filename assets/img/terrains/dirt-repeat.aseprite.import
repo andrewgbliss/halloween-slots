@@ -1,0 +1,14 @@
+[remap]
+
+importer="aseprite_wizard.plugin.noop"
+type="PackedDataContainer"
+uid="uid://texjnom2vyda"
+path="res://.godot/imported/dirt-repeat.aseprite-212f004692bec2b67132f7fc03cdcff6.res"
+
+[deps]
+
+source_file="res://assets/img/terrains/dirt-repeat.aseprite"
+dest_files=["res://.godot/imported/dirt-repeat.aseprite-212f004692bec2b67132f7fc03cdcff6.res"]
+
+[params]
+

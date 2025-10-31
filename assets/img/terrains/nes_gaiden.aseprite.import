@@ -1,0 +1,14 @@
+[remap]
+
+importer="aseprite_wizard.plugin.noop"
+type="PackedDataContainer"
+uid="uid://veh14r6gpro"
+path="res://.godot/imported/nes_gaiden.aseprite-66ff8759dc7f52f6bbca4b21dd88deb6.res"
+
+[deps]
+
+source_file="res://assets/img/terrains/nes_gaiden.aseprite"
+dest_files=["res://.godot/imported/nes_gaiden.aseprite-66ff8759dc7f52f6bbca4b21dd88deb6.res"]
+
+[params]
+

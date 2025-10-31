@@ -1,0 +1,14 @@
+[remap]
+
+importer="aseprite_wizard.plugin.noop"
+type="PackedDataContainer"
+uid="uid://cfnojqwrlebgf"
+path="res://.godot/imported/deep-grass.aseprite-d7a1b1337ab793a7a5dab4c3257d45cc.res"
+
+[deps]
+
+source_file="res://assets/img/terrains/deep-grass.aseprite"
+dest_files=["res://.godot/imported/deep-grass.aseprite-d7a1b1337ab793a7a5dab4c3257d45cc.res"]
+
+[params]
+

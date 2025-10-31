@@ -1,0 +1,74 @@
+[gd_scene load_steps=5 format=3 uid="uid://q5hagpg6ld8r"]
+
+[ext_resource type="Script" uid="uid://d1p1w0v4nd33x" path="res://scenes/prototypes/slot_machine/slot_machine_slot.gd" id="1_8ph12"]
+[ext_resource type="Texture2D" uid="uid://g04e6gtas8ej" path="res://assets/img/theme/Halloween-Items.png" id="2_58d5i"]
+
+[sub_resource type="Shader" id="Shader_8ph12"]
+code = "shader_type canvas_item;
+
+// The scroll offset (which symbol to center on, can be fractional for smooth scrolling)
+uniform float scroll_offset : hint_range(0.0, 12.0) = 0.0;
+
+// Number of frames in the sprite sheet
+uniform int h_frames = 6;
+uniform int v_frames = 2;
+
+// How many symbols to display vertically
+uniform int visible_symbols = 3;
+
+void fragment() {
+	int total_frames = h_frames * v_frames;
+	float frame_width = 1.0 / float(h_frames);
+	float frame_height = 1.0 / float(v_frames);
+	
+	// Calculate which symbol we're currently looking at
+	// UV.y ranges from 0.0 (top) to 1.0 (bottom)
+	// We want to map this to visible_symbols worth of symbols
+	float y_position = UV.y * float(visible_symbols);
+	
+	// Offset by scroll to create movement
+	// Subtract so that increasing scroll_offset moves symbols down
+	y_position -= scroll_offset;
+	
+	// Make it wrap around infinitely
+	y_position = mod(y_position + float(total_frames) * 1000.0, float(total_frames));
+	
+	// Which symbol index (0-11 for a 6x2 grid)
+	int symbol_idx = int(floor(y_position));
+	
+	// Position within that symbol (0.0 to 1.0)
+	float y_within_symbol = fract(y_position);
+	
+	// Convert symbol index to row/column in sprite sheet
+	int col = symbol_idx % h_frames;
+	int row = symbol_idx / h_frames;
+	
+	// Calculate UV in the texture atlas
+	vec2 tex_uv;
+	tex_uv.x = (float(col) + UV.x) * frame_width;
+	tex_uv.y = (float(row) + y_within_symbol) * frame_height;
+	
+	// Clamp to prevent bleeding
+	tex_uv = clamp(tex_uv, vec2(0.001), vec2(0.999));
+	
+	COLOR = texture(TEXTURE, tex_uv);
+}
+
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_58d5i"]
+resource_local_to_scene = true
+shader = SubResource("Shader_8ph12")
+shader_parameter/scroll_offset = 0.0
+shader_parameter/h_frames = 6
+shader_parameter/v_frames = 2
+shader_parameter/visible_symbols = 1
+
+[node name="SlotMachineSlot" type="Node2D"]
+script = ExtResource("1_8ph12")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+material = SubResource("ShaderMaterial_58d5i")
+position = Vector2(8, 7.9999995)
+scale = Vector2(0.16666666, 0.49999997)
+texture = ExtResource("2_58d5i")

@@ -1,0 +1,14 @@
+[remap]
+
+importer="aseprite_wizard.plugin.noop"
+type="PackedDataContainer"
+uid="uid://cocv0piqsgklx"
+path="res://.godot/imported/halloween-blocks.aseprite-d9faca58c10747c6e76396d6aecd82fb.res"
+
+[deps]
+
+source_file="res://assets/img/theme/halloween-blocks.aseprite"
+dest_files=["res://.godot/imported/halloween-blocks.aseprite-d9faca58c10747c6e76396d6aecd82fb.res"]
+
+[params]
+

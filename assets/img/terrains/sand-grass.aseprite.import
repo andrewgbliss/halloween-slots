@@ -1,0 +1,14 @@
+[remap]
+
+importer="aseprite_wizard.plugin.noop"
+type="PackedDataContainer"
+uid="uid://dmwc0y74w6qqp"
+path="res://.godot/imported/sand-grass.aseprite-b7866ff3fc31ed4a66e56236d29ddf9b.res"
+
+[deps]
+
+source_file="res://assets/img/terrains/sand-grass.aseprite"
+dest_files=["res://.godot/imported/sand-grass.aseprite-b7866ff3fc31ed4a66e56236d29ddf9b.res"]
+
+[params]
+

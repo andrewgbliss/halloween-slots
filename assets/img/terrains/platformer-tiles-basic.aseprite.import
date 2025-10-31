@@ -1,0 +1,14 @@
+[remap]
+
+importer="aseprite_wizard.plugin.noop"
+type="PackedDataContainer"
+uid="uid://cjasgbhiixkua"
+path="res://.godot/imported/platformer-tiles-basic.aseprite-d57f7ceba774c045757f300e46623379.res"
+
+[deps]
+
+source_file="res://assets/img/terrains/platformer-tiles-basic.aseprite"
+dest_files=["res://.godot/imported/platformer-tiles-basic.aseprite-d57f7ceba774c045757f300e46623379.res"]
+
+[params]
+

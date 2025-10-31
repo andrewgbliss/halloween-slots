@@ -1,0 +1,14 @@
+[remap]
+
+importer="aseprite_wizard.plugin.noop"
+type="PackedDataContainer"
+uid="uid://dxxu3x3l5v5v0"
+path="res://.godot/imported/8bit-blue-bricks.aseprite-8b2c025ff8e91741f7e86761dc3cf0b4.res"
+
+[deps]
+
+source_file="res://assets/img/terrains/8bit-blue-bricks.aseprite"
+dest_files=["res://.godot/imported/8bit-blue-bricks.aseprite-8b2c025ff8e91741f7e86761dc3cf0b4.res"]
+
+[params]
+
