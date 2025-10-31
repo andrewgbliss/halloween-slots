@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=4 uid="uid://cpqpcceulodc1"]
+[gd_scene load_steps=15 format=4 uid="uid://cpqpcceulodc1"]
 
 [ext_resource type="TileSet" uid="uid://cc0lpenrgnggx" path="res://scenes/world/platformer/basic/platformer_halloween_8bitblocks_world_tiles.tres" id="1_cv3xv"]
 [ext_resource type="Script" uid="uid://dwisagxtjle1l" path="res://scenes/slot_machine.gd" id="1_myip4"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://q5hagpg6ld8r" path="res://scenes/slot_machine_slot.tscn" id="3_sq5s4"]
 [ext_resource type="Texture2D" uid="uid://dl5ed1afrnnhn" path="res://assets/img/masks/LightMask.png" id="5_puwce"]
 [ext_resource type="Texture2D" uid="uid://cyjbdtyv3tl58" path="res://assets/img/theme/spin.png" id="5_sq5s4"]
+[ext_resource type="Texture2D" uid="uid://uop1huuwvs0m" path="res://assets/img/theme/title.png" id="7_h3s22"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_sgi0d"]
 noise_type = 0
@@ -127,5 +128,10 @@ grow_horizontal = 2
 grow_vertical = 0
 texture_normal = ExtResource("5_sq5s4")
 stretch_mode = 0
+
+[node name="Title" type="Sprite2D" parent="."]
+position = Vector2(422, 65)
+scale = Vector2(0.4, 0.4)
+texture = ExtResource("7_h3s22")
 
 [connection signal="pressed" from="CanvasLayer/TextureButton" to="." method="_on_texture_button_pressed"]
