@@ -66,7 +66,7 @@ const WIN_PATTERNS = {
 
 ## Base win payouts (in cents) - will be multiplied by rarity
 const WIN_PAYOUTS_BASE = {
-	"three_of_a_kind": 50, # Base 50 cents for three of a kind
+	"three_of_a_kind": 10, # Base 50 cents for three of a kind
 	"two_of_a_kind": 5, # Base 10 cents for two of a kind
 }
 
@@ -239,8 +239,7 @@ func _check_for_wins() -> void:
 		_update_spins_display()
 		
 		# Create win message with rarity
-		var rarity_emoji = _get_rarity_emoji(winning_rarity)
-		var message = "THREE OF A KIND!\n" + rarity_emoji + " " + winning_rarity + " " + rarity_emoji + "\nYOU WIN " + _format_money(payout) + "!"
+		var message = "THREE OF A KIND!\n" + winning_rarity + "\nYOU WIN " + _format_money(payout) + "!"
 		_show_result_label(message, Color.GOLD)
 		print("Win! Payout: ", _format_money(payout), " | Rarity: ", winning_rarity, " | New balance: ", _format_money(balance_cents))
 	elif max_count >= 2:
@@ -257,28 +256,13 @@ func _check_for_wins() -> void:
 		_update_spins_display()
 		
 		# Create win message with rarity
-		var rarity_emoji = _get_rarity_emoji(winning_rarity)
-		var message = "TWO OF A KIND!\n" + rarity_emoji + " " + winning_rarity + " " + rarity_emoji + "\nYOU WIN " + _format_money(payout) + "!"
+		var message = "TWO OF A KIND!\n" + winning_rarity + "\nYOU WIN " + _format_money(payout) + "!"
 		_show_result_label(message, Color.GREEN)
 		print("Win! Payout: ", _format_money(payout), " | Rarity: ", winning_rarity, " | New balance: ", _format_money(balance_cents))
 	else:
 		# No win - counter already incremented when spin started
 		print("No win. Spins since last win: ", spin_count_since_last_win)
 		_show_result_label("NO MATCH\nTRY AGAIN!", Color.DARK_GRAY)
-
-func _get_rarity_emoji(rarity: String) -> String:
-	"""Get an emoji representation for each rarity."""
-	match rarity:
-		"Common":
-			return "⚪"
-		"Rare":
-			return "🔵"
-		"Epic":
-			return "🟣"
-		"Legendary":
-			return "🟡"
-		_:
-			return "⚪"
 
 func _show_result_label(message: String, color: Color = Color.WHITE) -> void:
 	"""Display the result message on the label."""
@@ -442,19 +426,49 @@ func generate_targets():
 		
 		# Check if we should give a guaranteed 3-of-a-kind win
 		# Generate a random threshold between 10-15 and check against spin_count_since_last_win
-		var guaranteed_win_threshold = randi_range(10, 15)
+		var guaranteed_win_threshold = randi_range(5, 15)
 		
 		if spin_count_since_last_win >= guaranteed_win_threshold:
-			# Time for a guaranteed win! Generate all 3 reels with the same item
+			# Time for a guaranteed win! Randomly choose between 3-of-a-kind or 2-of-a-kind
+			var win_type = randi() % 2 # 0 = 3-of-a-kind, 1 = 2-of-a-kind
 			var guaranteed_item = _select_weighted_item()
-			for i in range(3):
-				random_targets.append(guaranteed_item)
 			
-			print("Guaranteed 3-of-a-kind win! (Spin count: ", spin_count_since_last_win, ", Threshold: ", guaranteed_win_threshold, ")")
+			if win_type == 0:
+				# 3-of-a-kind: all 3 items the same
+				for i in range(3):
+					random_targets.append(guaranteed_item)
+				print("Guaranteed 3-of-a-kind win! (Spin count: ", spin_count_since_last_win, ", Threshold: ", guaranteed_win_threshold, ")")
+			else:
+				# 2-of-a-kind: first two items the same, third different
+				random_targets.append(guaranteed_item)
+				random_targets.append(guaranteed_item)
+				
+				# Generate a different item for the third reel (try once to get a different one)
+				var third_item = _select_weighted_item()
+				if third_item == guaranteed_item:
+					third_item = _select_weighted_item()
+				random_targets.append(third_item)
+				print("Guaranteed 2-of-a-kind win! (Spin count: ", spin_count_since_last_win, ", Threshold: ", guaranteed_win_threshold, ")")
 		else:
-			# Normal weighted selection
-			for i in range(3):
-				var target = _select_weighted_item()
-				random_targets.append(target)
+			# Normal weighted selection with reduced chance of two-of-a-kind
+			# Generate first item
+			var first_item = _select_weighted_item()
+			random_targets.append(first_item)
+			
+			# Generate second item - if it matches first, only keep it sometimes (25% chance)
+			var second_item = _select_weighted_item()
+			if second_item == first_item:
+				# Only allow the match 25% of the time, otherwise regenerate
+				if randf() > 0.20:
+					second_item = _select_weighted_item()
+			random_targets.append(second_item)
+			
+			# Generate third item - if it would create two-of-a-kind, only allow it sometimes (20% chance)
+			var third_item = _select_weighted_item()
+			if third_item == first_item or third_item == second_item:
+				# Only allow the match 20% of the time, otherwise regenerate once
+				if randf() > 0.20:
+					third_item = _select_weighted_item()
+			random_targets.append(third_item)
 		
 		spin_with_targets(random_targets)
