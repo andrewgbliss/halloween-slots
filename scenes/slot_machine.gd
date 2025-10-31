@@ -5,6 +5,7 @@ class_name SlotMachine extends Node2D
 @export var auto_calculate_wins: bool = true
 @export var result_label: Label # Label to show win/lose results
 @export var money_label: Label # Label to show win/lose results
+@export var spins_label: Label # Label to show spins
 
 var items = {
 	"Pumpkin": {
@@ -66,7 +67,7 @@ const WIN_PATTERNS = {
 ## Base win payouts (in cents) - will be multiplied by rarity
 const WIN_PAYOUTS_BASE = {
 	"three_of_a_kind": 50, # Base 50 cents for three of a kind
-	"two_of_a_kind": 10, # Base 10 cents for two of a kind
+	"two_of_a_kind": 5, # Base 10 cents for two of a kind
 }
 
 ## Rarity multipliers for payouts
@@ -93,8 +94,9 @@ func _ready() -> void:
 	for reel in reels:
 		reel.spin_complete.connect(_on_reel_complete)
 	
-	# Initialize money display
+	# Initialize displays
 	_update_money_display()
+	_update_spins_display()
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_accept"): # SPACE key
@@ -158,6 +160,10 @@ func spin(targets: Array[int] = []) -> void:
 	_update_money_display()
 	print("Spin cost: ", _format_money(SPIN_COST), " | Remaining: ", _format_money(balance_cents))
 	
+	# Increment spin count when spin starts
+	spin_count_since_last_win += 1
+	_update_spins_display()
+	
 	is_spinning = true
 	_on_spin_started()
 	
@@ -191,6 +197,10 @@ func _on_all_reels_complete() -> void:
 	
 	if auto_calculate_wins:
 		_check_for_wins()
+	else:
+		# If auto-calculate is off, still increment the counter
+		spin_count_since_last_win += 1
+		_update_spins_display()
 
 func _check_for_wins() -> void:
 	if current_targets.is_empty():
@@ -226,10 +236,11 @@ func _check_for_wins() -> void:
 		_update_money_display()
 		_on_win("three_of_a_kind", current_targets)
 		spin_count_since_last_win = 0
+		_update_spins_display()
 		
 		# Create win message with rarity
 		var rarity_emoji = _get_rarity_emoji(winning_rarity)
-		var message = "🎉 THREE OF A KIND! 🎉\n" + rarity_emoji + " " + winning_rarity + " " + rarity_emoji + "\nYOU WIN " + _format_money(payout) + "!"
+		var message = "THREE OF A KIND!\n" + rarity_emoji + " " + winning_rarity + " " + rarity_emoji + "\nYOU WIN " + _format_money(payout) + "!"
 		_show_result_label(message, Color.GOLD)
 		print("Win! Payout: ", _format_money(payout), " | Rarity: ", winning_rarity, " | New balance: ", _format_money(balance_cents))
 	elif max_count >= 2:
@@ -243,14 +254,15 @@ func _check_for_wins() -> void:
 		_update_money_display()
 		_on_win("two_of_a_kind", current_targets)
 		spin_count_since_last_win = 0
+		_update_spins_display()
 		
 		# Create win message with rarity
 		var rarity_emoji = _get_rarity_emoji(winning_rarity)
-		var message = "✨ TWO OF A KIND! ✨\n" + rarity_emoji + " " + winning_rarity + " " + rarity_emoji + "\nYOU WIN " + _format_money(payout) + "!"
+		var message = "TWO OF A KIND!\n" + rarity_emoji + " " + winning_rarity + " " + rarity_emoji + "\nYOU WIN " + _format_money(payout) + "!"
 		_show_result_label(message, Color.GREEN)
 		print("Win! Payout: ", _format_money(payout), " | Rarity: ", winning_rarity, " | New balance: ", _format_money(balance_cents))
 	else:
-		spin_count_since_last_win += 1
+		# No win - counter already incremented when spin started
 		print("No win. Spins since last win: ", spin_count_since_last_win)
 		_show_result_label("NO MATCH\nTRY AGAIN!", Color.DARK_GRAY)
 
@@ -285,6 +297,14 @@ func _update_money_display() -> void:
 	"""Update the money label with current balance."""
 	if money_label:
 		money_label.text = _format_money(balance_cents)
+
+func _update_spins_display() -> void:
+	"""Update the spins label with current spin count since last win."""
+	if spins_label:
+		if spin_count_since_last_win == 0:
+			spins_label.text = "Spins: 0"
+		else:
+			spins_label.text = "Spins: %d" % spin_count_since_last_win
 
 func get_balance() -> int:
 	"""Returns the current balance in cents."""
@@ -415,13 +435,26 @@ func _select_weighted_item() -> int:
 
 func generate_targets():
 	"""Generate three target items using weighted random selection based on rarity.
-	Weights are adjusted if player hasn't won in 5-10 spins."""
+	Weights are adjusted if player hasn't won in 5-10 spins.
+	Every 10-15 spins, guarantees a 3-of-a-kind win."""
 	if not is_busy():
 		var random_targets: Array[int] = []
 		
-		# Generate 3 targets using weighted selection
-		for i in range(3):
-			var target = _select_weighted_item()
-			random_targets.append(target)
+		# Check if we should give a guaranteed 3-of-a-kind win
+		# Generate a random threshold between 10-15 and check against spin_count_since_last_win
+		var guaranteed_win_threshold = randi_range(10, 15)
+		
+		if spin_count_since_last_win >= guaranteed_win_threshold:
+			# Time for a guaranteed win! Generate all 3 reels with the same item
+			var guaranteed_item = _select_weighted_item()
+			for i in range(3):
+				random_targets.append(guaranteed_item)
+			
+			print("Guaranteed 3-of-a-kind win! (Spin count: ", spin_count_since_last_win, ", Threshold: ", guaranteed_win_threshold, ")")
+		else:
+			# Normal weighted selection
+			for i in range(3):
+				var target = _select_weighted_item()
+				random_targets.append(target)
 		
 		spin_with_targets(random_targets)
