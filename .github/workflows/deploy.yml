@@ -1,0 +1,55 @@
+name: Build Godot Project
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+jobs:
+  export_web:
+    name: Export
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: Export Game
+        id: export
+        uses: firebelley/godot-export@v6.0.0
+        with:
+          godot_executable_download_url: https://github.com/godotengine/godot-builds/releases/download/${{ secrets.GODOT_VERSION }}/Godot_v${{ secrets.GODOT_VERSION }}_linux.x86_64.zip
+          godot_export_templates_download_url: https://github.com/godotengine/godot-builds/releases/download/${{ secrets.GODOT_VERSION }}/Godot_v${{ secrets.GODOT_VERSION }}_export_templates.tpz
+          relative_project_path: ./
+          archive_output: true
+          use_preset_export_path: true
+          export_debug: false
+          presets_to_export: win,linux,web
+
+      - name: Upload web build to itch
+        uses: KikimoraGames/itch-publish@v0.0.3
+        with:
+          butlerApiKey: ${{ secrets.BUTLER_KEY }}
+          gameData: ./build/web/web.zip
+          itchUsername: ${{ secrets.ITCH_USER_NAME }}
+          itchGameId: ${{ secrets.ITCH_GAME_ID }}
+          buildChannel: html5
+
+      - name: Upload windows build to itch
+        uses: KikimoraGames/itch-publish@v0.0.3
+        with:
+          butlerApiKey: ${{ secrets.BUTLER_KEY }}
+          gameData: ./build/win/win.zip
+          itchUsername: ${{ secrets.ITCH_USER_NAME }}
+          itchGameId: ${{ secrets.ITCH_GAME_ID }}
+          buildChannel: windows
+
+      - name: Upload linux build to itch
+        uses: KikimoraGames/itch-publish@v0.0.3
+        with:
+          butlerApiKey: ${{ secrets.BUTLER_KEY }}
+          gameData: ./build/linux/linux.zip
+          itchUsername: ${{ secrets.ITCH_USER_NAME }}
+          itchGameId: ${{ secrets.ITCH_GAME_ID }}
+          buildChannel: linux
