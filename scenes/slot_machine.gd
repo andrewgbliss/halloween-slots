@@ -17,7 +17,7 @@ var items = {
 	},
 	"Skull": {
 		"index": 1,
-		"rarity": "Rare"
+		"rarity": "Epic"
 	},
 	"Hat": {
 		"index": 2,
@@ -29,15 +29,15 @@ var items = {
 	},
 	"Ghost": {
 		"index": 4,
-		"rarity": "Common"
+		"rarity": "Rare"
 	},
 	"Cat": {
 		"index": 5,
-		"rarity": "Common"
+		"rarity": "Rare"
 	},
 	"Spider": {
 		"index": 6,
-		"rarity": "Rare"
+		"rarity": "Epic"
 	},
 	"Eyes": {
 		"index": 7,
@@ -45,19 +45,19 @@ var items = {
 	},
 	"Cauldron": {
 		"index": 8,
-		"rarity": "Epic"
+		"rarity": "Common"
 	},
 	"Potion": {
 		"index": 9,
-		"rarity": "Rare"
+		"rarity": "Common"
 	},
 	"Gravestone": {
 		"index": 10,
-		"rarity": "Epic"
+		"rarity": "Common"
 	},
 	"Candle": {
 		"index": 11,
-		"rarity": "Legendary"
+		"rarity": "Common"
 	}
 }
 
@@ -72,10 +72,10 @@ const WIN_PAYOUTS_BASE = {
 }
 
 const RARITY_MULTIPLIERS = {
-	"Common": 1.0,
-	"Rare": 5.0,
-	"Epic": 10.0,
-	"Legendary": 100.0
+	"Common": 1,
+	"Rare": 2,
+	"Epic": 3,
+	"Legendary": 5
 }
 
 const RARITY_WEIGHTS_DEFAULT: Array[int] = [50, 30, 16, 4]
@@ -192,22 +192,19 @@ func _check_for_wins() -> void:
 	if current_targets.is_empty():
 		return
 
-	var symbol_counts: Dictionary = {}
-	for symbol in current_targets:
-		if symbol in symbol_counts:
-			symbol_counts[symbol] += 1
+	# Check for consecutive matches from the start (left to right)
+	var first_symbol = current_targets[0]
+	var match_count = 1
+	
+	# Count how many consecutive symbols match from index 0
+	for i in range(1, current_targets.size()):
+		if current_targets[i] == first_symbol:
+			match_count += 1
 		else:
-			symbol_counts[symbol] = 1
+			break
 	
-	var max_count = 0
-	var winning_symbol = -1
-	for symbol in symbol_counts:
-		if symbol_counts[symbol] > max_count:
-			max_count = symbol_counts[symbol]
-			winning_symbol = symbol
-	
-	if max_count >= 3:
-		var winning_rarity = _get_rarity_by_index(winning_symbol)
+	if match_count >= 3:
+		var winning_rarity = _get_rarity_by_index(first_symbol)
 		var rarity_multiplier = RARITY_MULTIPLIERS.get(winning_rarity, 1.0)
 		var base_payout = WIN_PAYOUTS_BASE["three_of_a_kind"]
 		var payout = int(base_payout * rarity_multiplier * bet_amount)
@@ -218,8 +215,8 @@ func _check_for_wins() -> void:
 		
 		var message = "THREE OF A KIND!\n" + winning_rarity + "\nYOU WIN " + _format_money(payout) + "!"
 		_show_result_label(message, Color.GOLD)
-	elif max_count >= 2:
-		var winning_rarity = _get_rarity_by_index(winning_symbol)
+	elif match_count >= 2:
+		var winning_rarity = _get_rarity_by_index(first_symbol)
 		var rarity_multiplier = RARITY_MULTIPLIERS.get(winning_rarity, 1.0)
 		var base_payout = WIN_PAYOUTS_BASE["two_of_a_kind"]
 		var payout = int(base_payout * rarity_multiplier * bet_amount)
