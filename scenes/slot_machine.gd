@@ -1,11 +1,12 @@
 class_name SlotMachine extends Node2D
 
 @export var num_reels: int = 3
-@export var reel_start_delay: float = 0.2 # Delay between each reel starting
+@export var reel_start_delay: float = 0.2
 @export var auto_calculate_wins: bool = true
-@export var result_label: Label # Label to show win/lose results
-@export var money_label: Label # Label to show win/lose results
-@export var spins_label: Label # Label to show spins
+@export var result_label: Label
+@export var money_label: Label
+@export var spins_label: Label
+@export var bet_amount_label: Label
 
 var items = {
 	"Pumpkin": {
@@ -58,88 +59,71 @@ var items = {
 	}
 }
 
-## Win patterns (for 3 reels)
 const WIN_PATTERNS = {
-	"three_of_a_kind": 3, # All three symbols match
-	"two_of_a_kind": 2, # Two symbols match
+	"three_of_a_kind": 3,
+	"two_of_a_kind": 2,
 }
 
-## Base win payouts (in cents) - will be multiplied by rarity
 const WIN_PAYOUTS_BASE = {
-	"three_of_a_kind": 10, # Base 50 cents for three of a kind
-	"two_of_a_kind": 5, # Base 10 cents for two of a kind
+	"three_of_a_kind": 50,
+	"two_of_a_kind": 5,
 }
 
-## Rarity multipliers for payouts
 const RARITY_MULTIPLIERS = {
 	"Common": 1.0,
-	"Rare": 2.0,
-	"Epic": 4.0,
-	"Legendary": 10.0
+	"Rare": 5.0,
+	"Epic": 10.0,
+	"Legendary": 100.0
 }
 
-## Money system
-const SPIN_COST: int = 1 # Cost per spin in cents
+const RARITY_WEIGHTS_DEFAULT: Array[int] = [50, 30, 16, 4]
+const RARITIES: Array[String] = ["Common", "Rare", "Epic", "Legendary"]
 
-## State
+var bet_amount: int = 1
 var is_spinning: bool = false
 var reels: Array[SlotMachineSlot] = []
 var spin_count_since_last_win: int = 0
-var current_targets: Array[int] = [] # Stores the current spin targets
-var balance_cents: int = 100 # Starting balance in cents ($1.00)
+var current_targets: Array[int] = []
 
 func _ready() -> void:
 	_find_reels()
 	
 	for reel in reels:
 		reel.spin_complete.connect(_on_reel_complete)
+
+	call_deferred("_after_ready")
 	
-	# Initialize displays
+func _after_ready() -> void:
 	_update_money_display()
 	_update_spins_display()
 
 func _input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_accept"): # SPACE key
+	if event.is_action_pressed("ui_accept"):
 		generate_targets()
 	elif event.is_action_pressed("ui_cancel"):
 		get_tree().quit()
 
 func spin_random() -> void:
 	if not is_busy():
-		print("\n=== SPINNING ===")
 		spin()
 
 func spin_with_targets(targets: Array[int]) -> void:
 	if not is_busy():
-		print("\n=== SPINNING (Targeted) ===", targets)
 		spin(targets)
 
 func _on_spin_started() -> void:
-	print("Reels are spinning...")
-	
-	# Clear the result label when starting a new spin
 	if result_label:
 		result_label.text = ""
 		result_label.hide()
 
 func _on_spin_complete() -> void:
-	print("\n=== SPIN COMPLETE ===")
 	is_spinning = false
-	
-func _on_win(win_type: String, symbols: Array[int]) -> void:
-	"""Called when there's a winning combination."""
-	print("\n🎉🎉🎉 WIN! 🎉🎉🎉")
-	print("Win Type: ", win_type)
-	print("Symbols: ", symbols)
-	print("🎉🎉🎉🎉🎉🎉🎉🎉🎉")
 
 func _find_reels() -> void:
 	reels.clear()
 	for child in get_children():
 		if child is SlotMachineSlot:
 			reels.append(child)
-	
-	# Sort reels by position (left to right)
 	reels.sort_custom(func(a, b): return a.position.x < b.position.x)
 
 func spin(targets: Array[int] = []) -> void:
@@ -151,14 +135,11 @@ func spin(targets: Array[int] = []) -> void:
 		return
 	
 	# Check if player has enough money
-	if balance_cents < SPIN_COST:
-		print("Not enough money! Balance: ", _format_money(balance_cents))
+	if GameManager.game_config.balance < bet_amount:
+		result_label.text = "Not enough money! Balance: " + _format_money(GameManager.game_config.balance)
 		return
 	
-	# Deduct spin cost
-	balance_cents -= SPIN_COST
-	_update_money_display()
-	print("Spin cost: ", _format_money(SPIN_COST), " | Remaining: ", _format_money(balance_cents))
+	subtract_money(bet_amount)
 	
 	# Increment spin count when spin starts
 	spin_count_since_last_win += 1
@@ -205,10 +186,7 @@ func _on_all_reels_complete() -> void:
 func _check_for_wins() -> void:
 	if current_targets.is_empty():
 		return
-	
-	print("Checking wins for targets: ", current_targets)
-	
-	# Count symbol occurrences
+
 	var symbol_counts: Dictionary = {}
 	for symbol in current_targets:
 		if symbol in symbol_counts:
@@ -216,7 +194,6 @@ func _check_for_wins() -> void:
 		else:
 			symbol_counts[symbol] = 1
 	
-	# Find the most common symbol and its count
 	var max_count = 0
 	var winning_symbol = -1
 	for symbol in symbol_counts:
@@ -224,116 +201,77 @@ func _check_for_wins() -> void:
 			max_count = symbol_counts[symbol]
 			winning_symbol = symbol
 	
-	# Determine win type and award money
 	if max_count >= 3:
-		# Get rarity of winning symbol and calculate payout
 		var winning_rarity = _get_rarity_by_index(winning_symbol)
 		var rarity_multiplier = RARITY_MULTIPLIERS.get(winning_rarity, 1.0)
 		var base_payout = WIN_PAYOUTS_BASE["three_of_a_kind"]
-		var payout = int(base_payout * rarity_multiplier)
+		var payout = int(base_payout * rarity_multiplier * bet_amount)
 		
-		balance_cents += payout
-		_update_money_display()
-		_on_win("three_of_a_kind", current_targets)
+		add_money(payout)
 		spin_count_since_last_win = 0
 		_update_spins_display()
 		
-		# Create win message with rarity
 		var message = "THREE OF A KIND!\n" + winning_rarity + "\nYOU WIN " + _format_money(payout) + "!"
 		_show_result_label(message, Color.GOLD)
-		print("Win! Payout: ", _format_money(payout), " | Rarity: ", winning_rarity, " | New balance: ", _format_money(balance_cents))
 	elif max_count >= 2:
-		# Get rarity of winning symbol and calculate payout
 		var winning_rarity = _get_rarity_by_index(winning_symbol)
 		var rarity_multiplier = RARITY_MULTIPLIERS.get(winning_rarity, 1.0)
 		var base_payout = WIN_PAYOUTS_BASE["two_of_a_kind"]
-		var payout = int(base_payout * rarity_multiplier)
+		var payout = int(base_payout * rarity_multiplier * bet_amount)
 		
-		balance_cents += payout
-		_update_money_display()
-		_on_win("two_of_a_kind", current_targets)
+		add_money(payout * bet_amount)
 		spin_count_since_last_win = 0
 		_update_spins_display()
 		
-		# Create win message with rarity
 		var message = "TWO OF A KIND!\n" + winning_rarity + "\nYOU WIN " + _format_money(payout) + "!"
 		_show_result_label(message, Color.GREEN)
-		print("Win! Payout: ", _format_money(payout), " | Rarity: ", winning_rarity, " | New balance: ", _format_money(balance_cents))
 	else:
-		# No win - counter already incremented when spin started
-		print("No win. Spins since last win: ", spin_count_since_last_win)
-		_show_result_label("NO MATCH\nTRY AGAIN!", Color.DARK_GRAY)
+		_show_result_label("NO MATCH\nTRY AGAIN!", Color.WHITE)
 
 func _show_result_label(message: String, color: Color = Color.WHITE) -> void:
-	"""Display the result message on the label."""
 	if result_label:
 		result_label.text = message
 		result_label.modulate = color
 		result_label.show()
 
 func _format_money(cents: int) -> String:
-	"""Format cents as dollar string (e.g., 150 cents = '$1.50')"""
 	var dollars = int(cents / 100.0)
 	var remaining_cents = cents % 100
 	return "$%d.%02d" % [dollars, remaining_cents]
 
 func _update_money_display() -> void:
-	"""Update the money label with current balance."""
 	if money_label:
-		money_label.text = _format_money(balance_cents)
+		money_label.text = _format_money(GameManager.game_config.balance)
 
 func _update_spins_display() -> void:
-	"""Update the spins label with current spin count since last win."""
 	if spins_label:
 		if spin_count_since_last_win == 0:
 			spins_label.text = "Spins: 0"
 		else:
 			spins_label.text = "Spins: %d" % spin_count_since_last_win
+			
+func _update_bet_amount_display() -> void:
+	if bet_amount_label:
+		bet_amount_label.text = "Bet: %d" % bet_amount
 
 func get_balance() -> int:
-	"""Returns the current balance in cents."""
-	return balance_cents
+	return GameManager.game_config.balance
 
 func add_money(cents: int) -> void:
-	"""Add money to the balance."""
-	balance_cents += cents
+	GameManager.game_config.add_money(cents)
 	_update_money_display()
-	print("Added ", _format_money(cents), " | New balance: ", _format_money(balance_cents))
+
+func subtract_money(cents: int) -> void:
+	GameManager.game_config.subtract_money(cents)
+	_update_money_display()
 
 func is_busy() -> bool:
 	return is_spinning
-
-
-func _on_texture_button_pressed() -> void:
-	generate_targets()
-
-
-# const rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"];
-#   const rarityWeightDefaults = [50, 30, 16, 4, 0]; // Adjust 
-# const rarity = weightedRandom(rarities, rarityWeights);
-# function weightedRandom(choices, weights) {
-#   const totalWeight = weights.reduce((acc, w) => acc + w, 0);
-#   const random = Math.random() * totalWeight;
-
-#   let cumulative = 0;
-#   for (let i = 0; i < choices.length; i++) {
-#     cumulative += weights[i];
-#     if (random < cumulative) return choices[i];
-#   }
-# }
-
-## Rarity weights (default)
-## Based on the JavaScript code: [Common, Rare, Epic, Legendary]
-const RARITY_WEIGHTS_DEFAULT: Array[int] = [50, 30, 16, 4]
-const RARITIES: Array[String] = ["Common", "Rare", "Epic", "Legendary"]
-
+	
 func _weighted_random(choices: Array, weights: Array) -> Variant:
-	"""Weighted random selection converted from JavaScript.
-	Selects a random choice based on weights."""
 	if choices.is_empty() or weights.is_empty() or choices.size() != weights.size():
 		return null
 	
-	# Calculate total weight
 	var total_weight = 0
 	for weight in weights:
 		total_weight += weight
@@ -341,22 +279,17 @@ func _weighted_random(choices: Array, weights: Array) -> Variant:
 	if total_weight <= 0:
 		return choices[0] if not choices.is_empty() else null
 	
-	# Generate random value
 	var random = randf() * total_weight
 	
-	# Find the choice based on cumulative weights
 	var cumulative = 0
 	for i in range(choices.size()):
 		cumulative += weights[i]
 		if random < cumulative:
 			return choices[i]
 	
-	# Fallback (shouldn't happen)
 	return choices[-1]
 
 func _get_rarity_weights() -> Array[int]:
-	"""Get rarity weights, adjusted based on spin_count_since_last_win.
-	If player hasn't won in 5-10 spins, increase weights for higher rarities."""
 	var weights: Array[int] = RARITY_WEIGHTS_DEFAULT.duplicate()
 	
 	# If player hasn't won in 5-10 spins, adjust weights to favor higher rarities
@@ -383,7 +316,6 @@ func _get_rarity_weights() -> Array[int]:
 	return weights
 
 func _get_items_by_rarity(rarity: String) -> Array[int]:
-	"""Get all item indices for a given rarity."""
 	var item_indices: Array[int] = []
 	for item_name in items:
 		var item_data = items[item_name]
@@ -392,7 +324,6 @@ func _get_items_by_rarity(rarity: String) -> Array[int]:
 	return item_indices
 
 func _get_rarity_by_index(index: int) -> String:
-	"""Get the rarity of an item by its index."""
 	for item_name in items:
 		var item_data = items[item_name]
 		if item_data.get("index") == index:
@@ -400,75 +331,74 @@ func _get_rarity_by_index(index: int) -> String:
 	return "Common" # Fallback
 
 func _select_weighted_item() -> int:
-	"""Select a random item using weighted rarity selection."""
-	# Get adjusted rarity weights
 	var rarity_weights = _get_rarity_weights()
-	
-	# Select a rarity based on weights
 	var selected_rarity = _weighted_random(RARITIES, rarity_weights)
-	
-	# Get all items of this rarity
 	var items_of_rarity = _get_items_by_rarity(selected_rarity)
-	
-	# Select a random item from this rarity
 	if items_of_rarity.is_empty():
-		# Fallback: select completely random item
 		return randi_range(0, 11)
-	
 	return items_of_rarity[randi() % items_of_rarity.size()]
 
 func generate_targets():
-	"""Generate three target items using weighted random selection based on rarity.
-	Weights are adjusted if player hasn't won in 5-10 spins.
-	Every 10-15 spins, guarantees a 3-of-a-kind win."""
 	if not is_busy():
 		var random_targets: Array[int] = []
 		
-		# Check if we should give a guaranteed 3-of-a-kind win
-		# Generate a random threshold between 10-15 and check against spin_count_since_last_win
 		var guaranteed_win_threshold = randi_range(5, 15)
 		
 		if spin_count_since_last_win >= guaranteed_win_threshold:
-			# Time for a guaranteed win! Randomly choose between 3-of-a-kind or 2-of-a-kind
-			var win_type = randi() % 2 # 0 = 3-of-a-kind, 1 = 2-of-a-kind
+			var win_type = randi() % 2
 			var guaranteed_item = _select_weighted_item()
 			
 			if win_type == 0:
-				# 3-of-a-kind: all 3 items the same
 				for i in range(3):
 					random_targets.append(guaranteed_item)
-				print("Guaranteed 3-of-a-kind win! (Spin count: ", spin_count_since_last_win, ", Threshold: ", guaranteed_win_threshold, ")")
 			else:
-				# 2-of-a-kind: first two items the same, third different
 				random_targets.append(guaranteed_item)
 				random_targets.append(guaranteed_item)
 				
-				# Generate a different item for the third reel (try once to get a different one)
 				var third_item = _select_weighted_item()
 				if third_item == guaranteed_item:
 					third_item = _select_weighted_item()
 				random_targets.append(third_item)
-				print("Guaranteed 2-of-a-kind win! (Spin count: ", spin_count_since_last_win, ", Threshold: ", guaranteed_win_threshold, ")")
 		else:
-			# Normal weighted selection with reduced chance of two-of-a-kind
-			# Generate first item
 			var first_item = _select_weighted_item()
 			random_targets.append(first_item)
 			
-			# Generate second item - if it matches first, only keep it sometimes (25% chance)
 			var second_item = _select_weighted_item()
 			if second_item == first_item:
-				# Only allow the match 25% of the time, otherwise regenerate
 				if randf() > 0.20:
 					second_item = _select_weighted_item()
 			random_targets.append(second_item)
 			
-			# Generate third item - if it would create two-of-a-kind, only allow it sometimes (20% chance)
 			var third_item = _select_weighted_item()
 			if third_item == first_item or third_item == second_item:
-				# Only allow the match 20% of the time, otherwise regenerate once
 				if randf() > 0.20:
 					third_item = _select_weighted_item()
 			random_targets.append(third_item)
 		
 		spin_with_targets(random_targets)
+
+func _on_spin_button_pressed() -> void:
+	bet_amount = 1
+	_update_bet_amount_display()
+	generate_targets()
+
+func _on_max_bet_button_pressed() -> void:
+	bet_amount = 5
+	_update_bet_amount_display()
+	generate_targets()
+
+func _on_cash_out_button_pressed() -> void:
+	result_label.text = "You cashed out! Balance: " + _format_money(GameManager.game_config.balance)
+	GameManager.game_config.cash_out()
+	_update_money_display()
+	
+func _on_add_money_slot_button_pressed() -> void:
+	result_label.text = "You added $1.00!"
+	GameManager.game_config.add_money(100)
+	_update_money_display()
+
+func _on_minimize_button_pressed() -> void:
+	get_tree().root.mode = Window.MODE_MINIMIZED
+	
+func _on_close_button_pressed() -> void:
+	get_tree().quit()

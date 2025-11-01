@@ -1,0 +1,13 @@
+[gd_scene load_steps=4 format=3 uid="uid://cr2tnh0t8bqys"]
+
+[ext_resource type="Script" uid="uid://c8uekd3aar86h" path="res://blisscode/core/game/game_manager.gd" id="1_544rt"]
+[ext_resource type="Script" uid="uid://bxl4a6ucqrl6h" path="res://blisscode/core/config/game_config.gd" id="6_snmpb"]
+
+[sub_resource type="Resource" id="Resource_811in"]
+script = ExtResource("6_snmpb")
+metadata/_custom_type_script = "uid://bxl4a6ucqrl6h"
+
+[node name="GameManager" type="Node2D"]
+process_mode = 3
+script = ExtResource("1_544rt")
+game_config = SubResource("Resource_811in")

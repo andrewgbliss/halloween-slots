@@ -18,15 +18,20 @@ boot_splash/image="uid://5yytbw2yrv5q"
 config/icon="uid://cy6uvrtu635v"
 config/windows_native_icon="res://assets/img/icons/icon-1024.ico"
 
+[autoload]
+
+GameManager="*res://blisscode/core/game/game_manager.tscn"
+
 [display]
 
 window/size/viewport_width=640
 window/size/viewport_height=360
-window/size/window_width_override=1280
-window/size/window_height_override=720
+window/size/borderless=true
+window/size/transparent=true
 window/stretch/mode="viewport"
 window/stretch/aspect="expand"
 window/stretch/scale_mode="integer"
+window/per_pixel_transparency/allowed=true
 
 [gui]
 
@@ -37,3 +42,4 @@ theme/custom="uid://b2r2bk4bp4lgv"
 textures/canvas_textures/default_texture_filter=0
 renderer/rendering_method="mobile"
 textures/vram_compression/import_etc2_astc=true
+viewport/transparent_background=true
