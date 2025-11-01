@@ -7,6 +7,8 @@ class_name SlotMachine extends Node2D
 @export var money_label: Label
 @export var spins_label: Label
 @export var bet_amount_label: Label
+@export var minimize_button: TextureButton
+@export var close_button: TextureButton
 
 var items = {
 	"Pumpkin": {
@@ -65,7 +67,7 @@ const WIN_PATTERNS = {
 }
 
 const WIN_PAYOUTS_BASE = {
-	"three_of_a_kind": 50,
+	"three_of_a_kind": 15,
 	"two_of_a_kind": 5,
 }
 
@@ -86,6 +88,9 @@ var spin_count_since_last_win: int = 0
 var current_targets: Array[int] = []
 
 func _ready() -> void:
+	if OS.has_feature("web"):
+		minimize_button.visible = false
+		close_button.visible = false
 	_find_reels()
 	
 	for reel in reels:
@@ -398,7 +403,11 @@ func _on_add_money_slot_button_pressed() -> void:
 	_update_money_display()
 
 func _on_minimize_button_pressed() -> void:
+	if OS.has_feature("web"):
+		return
 	get_tree().root.mode = Window.MODE_MINIMIZED
 	
 func _on_close_button_pressed() -> void:
+	if OS.has_feature("web"):
+		return
 	get_tree().quit()
